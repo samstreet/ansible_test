@@ -1,0 +1,14 @@
+---
+sysctl:
+    net:
+        core:
+            somaxconn: 10000
+        ipv4:
+            ip_local_port_range: 10000 65535
+            tcp_tw_reuse: 1
+            netfilter:
+                ip_conntrack_tcp_timeout_time_wait: 1
+ulimit:
+    nofile:
+        soft: 999999
+        hard: 999999
