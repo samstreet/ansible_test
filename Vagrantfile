@@ -22,7 +22,7 @@ Vagrant.configure(2) do |config|
 
     # Share an additional folder to the guest VM. The first argument is the path on the host to the actual folder.
     # The second argument is the path on the guest to mount the folder. 
-    config.vm.synced_folder "/var/www/v3.wellbeingzone.co.uk", "/srv/www/", type: "rsync", rsync__exclude: "vendor/"
+    config.vm.synced_folder "/var/www/v3.wellbeingzone.co.uk", "/var/www/", type: "rsync", rsync__exclude: "vendor/"
 
 
 	# Configure VirtualBox specifically

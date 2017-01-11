@@ -1,6 +1,13 @@
 ---
 - hosts: all
   sudo: yes
+  vars:
+    apache_vhosts_enabled:
+      - servername: "vhost1.example.com"
+        serveradmin: "admin@example.com"
+        documentrootdir: "vhost1.example.com"
+        errorlog: "vhost1.example.com"
+        customlog: "vhost1.example.com"
   roles:
     - linux
     - apache

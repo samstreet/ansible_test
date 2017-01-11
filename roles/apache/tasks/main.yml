@@ -8,3 +8,23 @@
 
 - name: Start Apache
   service: name=apache2 state=running enabled=yes
+
+- name: Create a VirtualHost file for each enabled VirtualHost
+  template:
+    src=roles/apache/templates/vhost.conf.j2
+    dest=/etc/apache2/sites-available/{{ item.documentrootdir }}.conf
+    owner=root
+    group=root
+    mode=0644
+  with_items: apache_vhosts_enabled
+  notify:
+    - restart httpd
+
+- name: Create web directories for each enabled VirtualHost
+  file:
+    path=/var/www/public/{{ item.documentrootdir }}
+    state=directory
+    owner=root
+    group=root
+    mode=0755
+  with_items: apache_vhosts_enabled
