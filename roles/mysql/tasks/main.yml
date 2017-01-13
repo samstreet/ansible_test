@@ -1,0 +1,19 @@
+---
+- name: Install Mysql package
+  apt: name={{ item }} state=installed update_cache=yes
+  with_items:
+   - php5-mysql
+   - mysql-server
+   - libapache2-mod-auth-mysql
+   - python-mysqldb
+
+- name: Create Mysql configuration file
+  template: src=mysql.cnf.j2 dest=/etc/my.cnf
+  notify: 
+  - restart mysql
+
+- name: Start Mysql Service
+  service: name=mysql state=started enabled=true
+
+- name: Create Application Database
+  mysql_db: name=testdb state=present

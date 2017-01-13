@@ -1,30 +1,46 @@
 # roles/webserver/tasks/main.yml
 ---
-- name: Install Apache
-  apt: name=apache2 state=present
-
 - name: Install PHP module for Apache
   apt: name=libapache2-mod-php5 state=present
+- name: install apache2
+  apt: name=apache2 update_cache=yes state=latest
 
-- name: Start Apache
-  service: name=apache2 state=running enabled=yes
+- name: Apache | Enable module | Enable $module
+  command: a2enmod rewrite creates=/etc/apache2/mods-enabled/rewrite.load
+  notify: 
+    - restart apache2
 
-- name: Create a VirtualHost file for each enabled VirtualHost
-  template:
-    src=roles/apache/templates/vhost.conf.j2
-    dest=/etc/apache2/sites-available/{{ item.documentrootdir }}.conf
-    owner=root
-    group=root
-    mode=0644
-  with_items: apache_vhosts_enabled
+- name: enabled mod_rewrite
+  apache2_module: name=rewrite state=present
   notify:
-    - restart httpd
+    - restart apache2
 
-- name: Create web directories for each enabled VirtualHost
-  file:
-    path=/var/www/public/{{ item.documentrootdir }}
-    state=directory
-    owner=root
-    group=root
-    mode=0755
-  with_items: apache_vhosts_enabled
+- name: apache2 listen on port {{ http_port }}
+  lineinfile: dest=/etc/apache2/ports.conf regexp="^Listen " line="Listen {{ http_port }}" state=present
+  notify:
+    - restart apache2
+
+- name: apache2 virtualhost on port {{ http_port }}
+  lineinfile: dest=/etc/apache2/sites-available/000-default.conf regexp="^<VirtualHost \*:" line="<VirtualHost *:{{ http_port }}>"
+  notify:
+    - restart apache2
+
+- name: create virtual host file
+  template: src=vhost.conf.j2 dest=/etc/apache2/sites-available/{{ domain }}.conf
+
+- name: a2ensite {{ domain }}
+  command: a2ensite {{ domain }}
+  args:
+    creates: /etc/apache2/sites-enabled/{{ domain }}.conf
+  notify:
+    - restart apache2
+
+- name: install .htaccess
+  copy: src=.htaccess dest=/var/www/html mode=0775
+  notify:
+    - restart apache2
+
+- name: install Hello World PHP script
+  copy: src=index.php dest=/var/www/html mode=0775
+  notify:
+    - restart apache2
